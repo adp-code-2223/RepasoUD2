@@ -18,7 +18,7 @@ public class Main {
 	private static void matricularAlumno(String dni) {
 		String nombre = "", apellidos = "", direccion = "";
 		Date fechaNac = null;
-		Alumno alumno = null;
+		boolean found = false;
 
 		Connection conexion = null;
 		DataSource ds = DBCPDataSourceFactory.getDataSource();
@@ -40,29 +40,30 @@ public class Main {
 			ResultSet result = sentenciaSelect.executeQuery();
 
 			while (result.next()) {
+				found = true;
+
 				nombre = result.getString(2);
 				apellidos = result.getString(3);
 				direccion = result.getString(4);
 				fechaNac = result.getDate(5);
 
-				alumno = new Alumno(dni, nombre, apellidos, direccion, fechaNac);
-
 				System.out.println(result.getString(1) + "   " + result.getString(2) + " " + result.getString(3) + "  "
 						+ result.getString(4) + result.getDate(5));
 			}
+			if (found) {
+				sentenciaInsert.setString(1, dni);
+				sentenciaInsert.setString(2, nombre);
+				sentenciaInsert.setString(3, apellidos);
+				sentenciaInsert.setString(4, direccion);
+				sentenciaInsert.setDate(5, fechaNac);
 
-			sentenciaInsert.setString(1, dni);
-			sentenciaInsert.setString(2, nombre);
-			sentenciaInsert.setString(3, apellidos);
-			sentenciaInsert.setString(4, direccion);
-			sentenciaInsert.setDate(5, fechaNac);
+				sentenciaInsert.executeUpdate();
 
-			sentenciaInsert.executeUpdate();
+				sentenciaDelete.setString(1, dni);
+				sentenciaDelete.executeUpdate();
 
-			sentenciaDelete.setString(1, dni);
-			sentenciaDelete.executeUpdate();
-
-			conexion.commit();
+				conexion.commit();
+			}
 
 		} catch (SQLException ex) {
 			ex.printStackTrace();
